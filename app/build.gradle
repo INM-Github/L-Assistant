@@ -10,7 +10,14 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -24,7 +31,7 @@ ext {
     gsonVersion = '2.8.0'
     datetimePickerVersion = '3.1.3'
     glideVersion = '3.7.0'
-//    archRoomVersion = '1.0.0-alpha3'
+    archRoomVersion = '1.0.0-alpha3'
     retrofitVersion = '2.2.0'
 }
 
@@ -41,7 +48,8 @@ dependencies {
     compile "com.android.support:preference-v14:${supportLibVersion}"
     compile "com.android.support:recyclerview-v7:${supportLibVersion}"
 //    // Room
-//    compile "android.arch.persistence.room:runtime:${archRoomVersion}" annotationProcessor "android.arch.persistence.room:compiler:${archRoomVersion}"
+    compile "android.arch.persistence.room:runtime:${archRoomVersion}"
+    annotationProcessor "android.arch.persistence.room:compiler:${archRoomVersion}"
     // Retrofit series
     compile "com.squareup.retrofit2:retrofit:${retrofitVersion}"
     compile "com.squareup.retrofit2:converter-gson:${retrofitVersion}"
