@@ -3,16 +3,19 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_home"
-            android:icon="@drawable/ic_home_black_24px"
+            android:icon="@drawable/ic_home"
             android:title="@string/nav_home" />
-        <item
-            android:id="@+id/nav_weather"
-            android:icon="@drawable/ic_assignment_black_24px"
-            android:title="@string/nav_weather" />
+
         <item
             android:id="@+id/nav_news"
-            android:icon="@drawable/ic_message_black_24px"
+            android:icon="@drawable/ic_news"
             android:title="@string/nav_news" />
+
+        <item
+            android:id="@+id/nav_weather"
+            android:icon="@drawable/ic_weather"
+            android:title="@string/nav_weather" />
+
         <item
             android:id="@+id/nav_password"
             android:title="@string/nav_pass" />

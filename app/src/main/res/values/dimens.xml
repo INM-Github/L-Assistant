@@ -4,6 +4,7 @@
 
     <dimen name="app_bar_height">240dp</dimen>
 
+    <dimen name="nav_header_height">180dp</dimen>
     <dimen name="bottom_nav_height">56dp</dimen>
 
     <dimen name="item_height">96dp</dimen>
