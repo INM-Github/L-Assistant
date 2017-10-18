@@ -6,11 +6,34 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <FrameLayout
-        android:id="@+id/container_main"
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_height="match_parent"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:fitsSystemWindows="true"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:id="@+id/container"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_width="match_parent" />
+
+        <android.support.design.widget.BottomNavigationView
+            android:background="@color/colorPrimary"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="bottom"
+            android:id="@+id/bottom_nav"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            app:elevation="8dp"
+            app:itemIconTint="@drawable/nav_item_color"
+            app:itemTextColor="@drawable/nav_item_color"
+            app:menu="@menu/nav_buttom" />
+
+    </LinearLayout>
 
     <android.support.design.widget.NavigationView
         android:id="@+id/nav_view"

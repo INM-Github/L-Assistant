@@ -1,38 +1,42 @@
 package com.example.l_assistant;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.widget.Button;
 
-import com.example.l_assistant.ui.NewsFragment;
-import com.example.l_assistant.ui.PassFragment;
-import com.example.l_assistant.ui.WeatherFragment;
+import com.example.l_assistant.News.favorites.FavoritesFragment;
+import com.example.l_assistant.News.service.CacheService;
+import com.example.l_assistant.News.timeline.TimelineFragment;
+import com.example.l_assistant.News.ui.InfoFragment;
+
+/**
+ * Created by zkd on 2017/10/14.
+ */
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String KEY_DRAWER_NAV_VIEW_SELECTED_ID = "KEY_DRAWEE_NAV_VIEW_SELECTED_ID";
+    private static final String KEY_BOTTOM_NAVIGATION_VIEW_SELECTED_ID = "KEY_BOTTOM_NAVIGATION_VIEW_SELECTED_ID";
 
+    private TimelineFragment mTimelineFragment;
+    private InfoFragment mInfoFragment;
+    private FavoritesFragment mFavoritesFragment;
 
-    private NewsFragment mNewsFragment;
-
-    private WeatherFragment mWeatherFragment;
-
-    private PassFragment mPassFragment;
-
+    private BottomNavigationView mBottomNavigationView;
     private DrawerLayout mDrawerLayout;
 
     private NavigationView navView;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -41,22 +45,44 @@ public class MainActivity extends AppCompatActivity {
         initFragments(savedInstanceState);
 
         if (savedInstanceState != null) {
-            int id = savedInstanceState.getInt(KEY_DRAWER_NAV_VIEW_SELECTED_ID, navView.getId());
+            int id = savedInstanceState.getInt(KEY_BOTTOM_NAVIGATION_VIEW_SELECTED_ID, R.id.nav_timeline);
             switch (id) {
-                case R.id.nav_news:
-                    showFragment(mNewsFragment);
+                case R.id.nav_timeline:
+                    showFragment(mTimelineFragment);
                     break;
-                case R.id.nav_weather:
-                    showFragment(mWeatherFragment);
+                case R.id.nav_favorites:
+                    showFragment(mFavoritesFragment);
                     break;
-                case R.id.nav_password:
-                    showFragment(mPassFragment);
+                case R.id.nav_info:
+                    showFragment(mInfoFragment);
                     break;
             }
         } else {
-            showFragment(mNewsFragment);
+            showFragment(mTimelineFragment);
         }
 
+        mBottomNavigationView.setOnNavigationItemSelectedListener((menuItem -> {
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            switch (menuItem.getItemId()) {
+                case R.id.nav_timeline:
+                    showFragment(mTimelineFragment);
+                    break;
+
+                case R.id.nav_favorites:
+                    showFragment(mFavoritesFragment);
+                    break;
+
+                case R.id.nav_info:
+                    showFragment(mInfoFragment);
+                    break;
+
+                default:
+                    break;
+
+            }
+            ft.commit();
+            return true;
+        }));
 
         navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -66,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.nav_home:
                         break;
                     case R.id.nav_news:
-                        showFragment(mNewsFragment);
+                        showFragment(mTimelineFragment);
                         break;
                     case R.id.nav_weather:
                         break;
@@ -80,78 +106,90 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-//        navButton.setOnClickListener(v -> {
-//                mDrawerLayout.openDrawer(GravityCompat.START);
-//        });
+
+        // Start the caching service.
+        startService(new Intent(MainActivity.this, CacheService.class));
+
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt(KEY_DRAWER_NAV_VIEW_SELECTED_ID, navView.getId());
-        FragmentManager fm = getSupportFragmentManager();
-        if(mNewsFragment.isAdded()){
-            fm.putFragment(outState, NewsFragment.class.getSimpleName(), mNewsFragment);
-        }
-    }
-
-    private void initViews(){
+    private void initViews() {
+        mBottomNavigationView = findViewById(R.id.bottom_nav);
         mDrawerLayout = findViewById(R.id.drawer_layout);
         navView = findViewById(R.id.nav_view);
         navView.setCheckedItem(R.id.nav_news);
     }
 
-    private void initFragments(Bundle saveInstanceState){
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(KEY_BOTTOM_NAVIGATION_VIEW_SELECTED_ID, mBottomNavigationView.getSelectedItemId());
         FragmentManager fm = getSupportFragmentManager();
-        if(saveInstanceState == null){
-            mNewsFragment = NewsFragment.newInstance();
-            mWeatherFragment = WeatherFragment.newInstance();
-            mPassFragment = PassFragment.newInstance();
-        }else{
-            mNewsFragment = (NewsFragment) fm.getFragment(saveInstanceState, NewsFragment.class.getSimpleName());
-            mWeatherFragment = (WeatherFragment) fm.getFragment(saveInstanceState, WeatherFragment.class.getSimpleName());
-            mPassFragment = (PassFragment) fm.getFragment(saveInstanceState, PassFragment.class.getSimpleName());
+        if (mTimelineFragment.isAdded()) {
+            fm.putFragment(outState, TimelineFragment.class.getSimpleName(), mTimelineFragment);
+        }
+        if (mFavoritesFragment.isAdded()) {
+            fm.putFragment(outState, FavoritesFragment.class.getSimpleName(), mFavoritesFragment);
+        }
+        if (mInfoFragment.isAdded()) {
+            fm.putFragment(outState, InfoFragment.class.getSimpleName(), mInfoFragment);
         }
 
-        if(!mNewsFragment.isAdded()){
+    }
+
+    private void initFragments(Bundle savedInstanceState) {
+        FragmentManager fm = getSupportFragmentManager();
+        if (savedInstanceState == null) {
+            mTimelineFragment = TimelineFragment.newInstance();
+            mInfoFragment = InfoFragment.newInstance();
+            mFavoritesFragment = FavoritesFragment.newInstance();
+        } else {
+            mTimelineFragment = (TimelineFragment) fm.getFragment(savedInstanceState, TimelineFragment.class.getSimpleName());
+            mFavoritesFragment = (FavoritesFragment) fm.getFragment(savedInstanceState, FavoritesFragment.class.getSimpleName());
+            mInfoFragment = (InfoFragment) fm.getFragment(savedInstanceState, InfoFragment.class.getSimpleName());
+        }
+
+        if (!mTimelineFragment.isAdded()) {
             fm.beginTransaction()
-                    .add(R.id.container_main, mNewsFragment, NewsFragment.class.getSimpleName())
+                    .add(R.id.container, mTimelineFragment, TimelineFragment.class.getSimpleName())
                     .commit();
         }
 
-        if(!mWeatherFragment.isAdded()){
+        if (!mFavoritesFragment.isAdded()) {
             fm.beginTransaction()
-                    .add(R.id.container_main, mWeatherFragment, WeatherFragment.class.getSimpleName())
+                    .add(R.id.container, mFavoritesFragment, FavoritesFragment.class.getSimpleName())
                     .commit();
+
         }
 
-        if(!mPassFragment.isAdded()){
+        if (!mInfoFragment.isAdded()) {
             fm.beginTransaction()
-                    .add(R.id.container_main, mPassFragment, PassFragment.class.getSimpleName())
+                    .add(R.id.container, mInfoFragment, InfoFragment.class.getSimpleName())
                     .commit();
         }
     }
 
-    private void showFragment(Fragment fragment){
+    private void showFragment(Fragment fragment) {
         FragmentManager fm = getSupportFragmentManager();
-        if(fragment instanceof NewsFragment){
+        if (fragment instanceof TimelineFragment) {
             fm.beginTransaction()
-                    .show(mNewsFragment)
-                    .hide(mWeatherFragment)
-                    .hide(mPassFragment)
+                    .show(mTimelineFragment)
+                    .hide(mInfoFragment)
+                    .hide(mFavoritesFragment)
                     .commit();
-        }else if(fragment instanceof WeatherFragment){
+
+        } else if (fragment instanceof InfoFragment) {
             fm.beginTransaction()
-                    .show(mWeatherFragment)
-                    .hide(mNewsFragment)
-                    .hide(mPassFragment)
+                    .show(mInfoFragment)
+                    .hide(mTimelineFragment)
+                    .hide(mFavoritesFragment)
                     .commit();
-        }else if(fragment instanceof PassFragment){
+        } else if (fragment instanceof FavoritesFragment) {
             fm.beginTransaction()
-                    .show(mPassFragment)
-                    .hide(mWeatherFragment)
-                    .hide(mNewsFragment)
+                    .show(mFavoritesFragment)
+                    .hide(mTimelineFragment)
+                    .hide(mInfoFragment)
                     .commit();
         }
     }
+
 }
